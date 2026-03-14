@@ -3,135 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>নিখুঁত বিকাশ সেলামি পোস্টার মেকার</title>
+    <title>Salami Poster Maker - Fixed</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body { font-family: 'Arial', sans-serif; text-align: center; background: #fdf2f8; padding: 20px; }
         .control-panel { background: white; padding: 25px; border-radius: 15px; display: inline-block; box-shadow: 0 8px 20px rgba(216,32,112,0.1); max-width: 400px; width: 100%; margin-bottom: 20px; }
-        input[type="text"], input[type="file"] { width: 90%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
-        input[type="text"]:focus { border-color: #d82070; outline: none; }
-        .btn-group { margin-top: 15px; display: flex; justify-content: space-around; }
-        button { padding: 12px 25px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; }
-        .make-btn { background: #d82070; color: white; width: 60%; }
-        .make-btn:hover { background: #b01a5b; }
-        .down-btn { background: #28a745; color: white; width: 35%; display: none; }
-        #canvas-container { position: relative; display: inline-block; }
-        canvas { border: 2px solid #d82070; border-radius: 12px; max-width: 100%; height: auto; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        #qrcode-temp { display: none; } /* Hidden container for QR generation */
+        input { width: 90%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .make-btn { background: #d82070; color: white; padding: 12px 25px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; }
+        canvas { border: 2px solid #d82070; border-radius: 12px; max-width: 100%; height: auto; display: none; margin-top: 20px; }
+        #qrcode-temp { display: none; }
     </style>
 </head>
 <body>
 
     <div class="control-panel">
-        <h2 style="color: #d82070; margin-bottom: 5px;">বিকাশ সেলামি পোস্টার</h2>
-        <p style="color: #666; font-size: 14px;">নিখুঁত ডিজাইনে আপনার পোস্টার তৈরি করুন</p>
-        <input type="text" id="numInput" placeholder="আপনার বিকাশ নম্বর দিন (যেমন: ০১৭********)">
+        <h2 style="color: #d82070;">বিকাশ সেলামি পোস্টার</h2>
+        <input type="text" id="numInput" placeholder="বিকাশ নম্বর লিখুন">
         <input type="file" id="imgFile" accept="image/*">
-        
-        <div class="btn-group">
-            <button class="make-btn" onclick="generatePerfectPoster()">পোস্টার তৈরি করুন</button>
-            <button id="downBtn" class="down-btn" onclick="downloadPoster()">ডাউনলোড</button>
-        </div>
+        <button class="make-btn" onclick="generatePoster()">পোস্টার তৈরি করুন</button>
     </div>
 
     <div id="qrcode-temp"></div>
-
-    <div id="canvas-container">
-        <canvas id="posterCanvas" width="1024" height="1024"></canvas>
-    </div>
+    <canvas id="posterCanvas"></canvas>
 
     <script>
-        // আপনি যে বেস ইমেজটি ডাউনলোড করেছেন তার নাম এবং পাথ এখানে দিন
-        const BASE_IMAGE_SRC = 'base_design.jpg'; 
-
-        function generatePerfectPoster() {
+        function generatePoster() {
             const canvas = document.getElementById('posterCanvas');
             const ctx = canvas.getContext('2d');
             const number = document.getElementById('numInput').value;
             const fileInput = document.getElementById('imgFile');
-            const downBtn = document.getElementById('downBtn');
 
             if (!number || !fileInput.files[0]) {
-                alert("দয়া করে নম্বর এবং ছবি—উভয়ই প্রদান করুন!");
+                alert("নম্বর এবং ছবি দুটোই দিন!");
                 return;
             }
 
-            // ১. ক্লিয়ার কিউআর কোড কন্টেইনার
+            // ১. কিউআর কোড তৈরি
             document.getElementById('qrcode-temp').innerHTML = "";
-
-            // ২. নতুন কিউআর কোড তৈরি (নম্বরের ওপর ভিত্তি করে)
-            // বিকাশ কিউআর ফরম্যাট: bKash://qr?m=YOUR_NUMBER
-            const qrcode = new QRCode(document.getElementById("qrcode-temp"), {
+            new QRCode(document.getElementById("qrcode-temp"), {
                 text: `bKash://qr?m=${number}`,
-                width: 200, // কিউআর কোডের রেজোলিউশন
-                height: 200,
-                colorDark : "#d82070", // বিকাশ গোলাপী
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H // High error correction for scanning reliability
+                width: 256,
+                height: 256,
+                colorDark : "#d82070",
+                colorLight : "#ffffff"
             });
 
-            // ৩. লোড ইমেজ এবং বেস ডিজাইন
             const baseImg = new Image();
-            baseImg.src = BASE_IMAGE_SRC;
+            // এই লাইনে আপনার ইমেজ ফাইলের নাম ঠিক আছে কিনা চেক করুন
+            baseImg.src = 'base_design.jpg'; 
 
             baseImg.onload = function() {
-                // ক্যানভাস সাইজ বেস ইমেজের সমান করা
                 canvas.width = baseImg.width;
                 canvas.height = baseImg.height;
-
-                // ক্যানভাসে বেস ডিজাইন ড্র করা
                 ctx.drawImage(baseImg, 0, 0);
 
-                // ৪. ইউজারের ছবি লোড এবং ড্র (ডান পাশের খালি জায়গায়)
+                // ২. ইউজার ছবি ড্র করা
                 const reader = new FileReader();
-                reader.onload = function(event) {
+                reader.onload = function(e) {
                     const userImg = new Image();
                     userImg.onload = function() {
-                        // ইউজারের ছবির পজিশন এবং সাইজ (বেস ইমেজ অনুযায়ী অ্যাডজাস্টেড)
-                        const userPhotoX = 645; // অনুমিত অবস্থান
-                        const userPhotoY = 220; 
-                        const userPhotoW = 340; 
-                        const userPhotoH = 470;
+                        // ছবির পজিশন (আপনার ডিজাইন অনুযায়ী অ্যাডজাস্ট করুন)
+                        ctx.drawImage(userImg, 645, 220, 340, 470);
 
-                        // ছবিটিকে একটু রাউন্ড কর্নার দেওয়া (ঐচ্ছিক, সৌন্দর্যের জন্য)
-                        ctx.save();
-                        drawRoundedRect(ctx, userPhotoX, userPhotoY, userPhotoW, userPhotoH, 15);
-                        ctx.clip();
-                        ctx.drawImage(userImg, userPhotoX, userPhotoY, userPhotoW, userPhotoH);
-                        ctx.restore();
-
-                        // ৫. জেনারেট করা কিউআর কোড লোড এবং ড্র (বাম পাশের খালি জায়গায়)
-                        // কিউআর কোড জেনারেশন শেষ হতে একটু সময় নেয়
+                        // ৩. কিউআর কোড ড্র করা
                         setTimeout(() => {
-                            const qrImgElement = document.getElementById('qrcode-temp').getElementsByTagName('img')[0];
+                            const qrImgElement = document.querySelector('#qrcode-temp img');
                             if (qrImgElement) {
-                                const qrImg = new Image();
-                                qrImg.onload = function() {
-                                    const qrX = 90; // অনুমিত অবস্থান
-                                    const qrY = 515; 
-                                    const qrS = 185; // কিউআর সাইজ
+                                ctx.drawImage(qrImgElement, 90, 515, 185, 185);
+                                
+                                // ৪. নম্বর লেখা
+                                ctx.fillStyle = "#d82070";
+                                ctx.font = "bold 32px Arial";
+                                ctx.textAlign = "center";
+                                ctx.fillText(number, 182, 755);
 
-                                    // কিউআর কোডের চারপাশে সাদা বর্ডার
-                                    ctx.fillStyle = "#ffffff";
-                                    ctx.fillRect(qrX-5, qrY-5, qrS+10, qrS+10);
-                                    
-                                    ctx.drawImage(qrImg, qrX, qrY, qrS, qrS);
-
-                                    // ৬. নম্বর টেক্সট ড্র (কিউআর-এর নিচে)
-                                    ctx.fillStyle = "#d82070"; // বিকাশ গোলাপী
-                                    ctx.font = "bold 32px 'Courier New', monospace"; // নম্বরের জন্য ভালো ফন্ট
-                                    ctx.textAlign = "center";
-                                    ctx.fillText(number, qrX + (qrS/2), qrY + qrS + 55); // কিউআর-এর নিচে মিডিলে
-
-                                    // পোস্টার তৈরি শেষ, এখন ক্যানভাস দেখান
-                                    canvas.style.display = "block";
-                                    downBtn.style.display = "inline-block";
-                                };
-                                qrImg.src = qrImgElement.src;
-                            } else {
-                                alert("কিউআর কোড তৈরি করা যায়নি। আবার চেষ্টা করুন।");
+                                canvas.style.display = "block";
                             }
-                        }, 100); // ১০০ মিলি-সেকেন্ড অপেক্ষা
+                        }, 200);
                     };
-                    userImg.src = event.target.result;
+                    userImg.src = e.target.result;
                 };
+                reader.readAsDataURL(fileInput.files[0]);
+            };
+
+            baseImg.onerror = function() {
+                alert("base_design.jpg ফাইলটি পাওয়া যায়নি! নিশ্চিত করুন ফাইলটি index.html এর পাশেই আছে।");
+            };
+        }
+    </script>
+</body>
+</html>
